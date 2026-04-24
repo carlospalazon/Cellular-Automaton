@@ -336,3 +336,71 @@ code {
 }
 </style>
 
+# 0. Índex
+
+# 1. Introducció
+
+Els autòmats cel·lulars constitueixen una eina fonamental en l’estudi de sistemes complexos, ja que permeten modelitzar com comportaments globals poden emergir a partir de regles locals molt simples. En particular, els autòmats cel·lulars elementals definits per *Stephen Wolfram* representen un dels casos més bàsics i, alhora, més il·lustratius d’aquest tipus de sistemes, on una graella unidimensional de cel·les binàries evoluciona en el temps segons un conjunt finit de regles.
+
+L’objectiu de la primera part d’aquesta pràctica és implementar computacionalment aquests autòmats cel·lulars utilitzant un llenguatge de programació (en aquest cas, Python), permetent la simulació de diferents regles de Wolfram i la seva visualització temporal. A més, s’introdueix el concepte de coarse-graining o “gra gruixut”, aplicant una reducció de resolució amb factor K=2, amb la finalitat d’analitzar si les propietats macroscòpiques del sistema es conserven malgrat la pèrdua d’informació microscòpica. Aquest procés permet explorar la robustesa del comportament global i la seva dependència respecte als detalls locals.
+
+En la segona part es desenvolupa un model d’autòmat cel·lular bidimensional per simular la propagació d’un incendi forestal mitjançant un esquema multi-capa del tipus $m:n-CA^k$. El sistema es construeix a partir de dades ambientals que inclouen, com a mínim, dues capes principals: humitat i vegetació.
+
+La vegetació representa el temps necessari perquè una cel·la es consumeixi completament pel foc, mentre que la humitat introdueix un retard inicial que impedeix o dificulta l’encesa. A partir de la interacció entre aquestes capes i l’estat de les cel·les veïnes, es modelitza la propagació del foc mitjançant una capa d’estats amb tres fases: pendent de cremar-se, en combustió i cremat.
+
+Addicionalment, s’incorpora una capa vectorial de vent que introdueix una direcció preferent en la propagació de l’incendi, modificant la probabilitat d’extensió del foc segons l’orientació espacial. Això permet aproximar de manera més realista el comportament anisotròpic dels incendis forestals.
+
+# 2. Autòmat cel·lular de Wolfram
+
+## 2.1. Objectius i metodologia
+
+En aquesta primera part de la pràctica es desenvolupa una implementació en Python d’un autòmat cel·lular elemental basat en les regles de Wolfram. Aquests sistemes consisteixen en una graella unidimensional de cel·les binàries que evolucionen en el temps segons una regla local que depèn de l’estat de la cel·la i dels seus veïns immediats. Tot i la simplicitat de les regles, aquests models són capaços de generar comportaments altament diversos i, en alguns casos, complexos.
+
+L’objectiu principal d’aquesta part és estudiar l’evolució temporal de diferents regles representatives i comparar el comportament del sistema original amb una versió simplificada mitjançant un procés de *coarse-graining* amb factor $K=2$. Aquest procés consisteix en una reducció de resolució espacial del sistema, agrupant cel·les en blocs, amb la finalitat d’analitzar si les propietats globals del sistema es mantenen o canvien quan es perd informació microscòpica.
+
+Per a l’estudi s’han seleccionat diverses regles representatives del conjunt de 256 possibles regles de Wolfram. En concret, s’han analitzat les regles 0, 30, 90 i 110, ja que permeten observar diferents classes de comportament: des d’estats completament estacionaris (regla 0), passant per dinàmiques caòtiques (regla 30), estructures fractals (regla 90), fins a comportaments complexos amb potencial universal (regla 110). Aquesta selecció permet explorar una varietat significativa de dinàmiques dins del mateix marc formal.
+
+Pel que fa a les condicions de contorn, s’ha adoptat una condició periòdica, en la qual la graella es tracta com un sistema tancat amb topologia circular. Això implica que la primera i l’última cel·la són veïnes, evitant així efectes artificials als extrems del sistema i garantint una evolució homogènia al llarg de tota la graella.
+
+Finalment, mitjançant la comparació entre el sistema original i la seva versió amb coarse-graining, es pretén analitzar fins a quin punt les dinàmiques observades són robustes davant canvis d’escala, contribuint així a l’estudi del comportament emergent en sistemes complexos.
+
+--- 
+
+## 2.2. Sistema original
+
+En aquesta figura es presenta la comparació de l’evolució temporal de quatre autòmats cel·lulars elementals corresponents a les regles 0, 30, 90 i 110. Cada subfigura mostra la dinàmica espaciotemporal del sistema a partir d’una condició inicial amb una única cel·la activa, permetent observar les diferències qualitatives entre comportaments generats per regles locals diferents.
+
+<img src="/sessio1/wolfram_multiple_rules.png" alt="descripció" width="1500">
+
+- **Regla 0:** S’observa que el sistema convergeix immediatament cap a un estat completament buit, on totes les cel·les adopten el valor 0. Aquest comportament correspon a una dinàmica trivial de classe 1, caracteritzada per l’absència de propagació i la desaparició completa de qualsevol estructura inicial. El sistema entra ràpidament en un estat absorbent estacionari.
+
+- **Regla 30:** S’observa que el sistema convergeix immediatament cap a un estat completament buit, on totes les cel·les adopten el valor 0. Aquest comportament correspon a una dinàmica trivial de classe 1, caracteritzada per l’absència de propagació i la desaparició completa de qualsevol estructura inicial. El sistema entra ràpidament en un estat absorbent estacionari.
+
+- **Regla 90:** S’observa la formació d’un patró fractal altament estructurat amb simetria triangular. Aquest comportament és determinista i regular, i genera una estructura global auto-similar. Correspon a una dinàmica de classe 2, on el sistema no és caòtic però tampoc convergeix a un estat fix, sinó que produeix patrons periòdics i geomètricament estructurats.
+
+- **Regla 110:** La dinàmica presenta una combinació de regularitat local i complexitat global. Es poden observar estructures persistents que es propaguen i interactuen, conegudes com a “gliders”, juntament amb zones més irregulars. Aquest comportament és característic de la classe 4, situada entre ordre i caos, i és especialment rellevant pel seu potencial de computació universal.
+
+Els resultats mostren que petites variacions en les regles locals generen comportaments globalment molt diferents, des de dinàmiques trivials fins a estructures complexes. Això posa de manifest el caràcter emergent dels autòmats cel·lulars i la seva capacitat per generar complexitat a partir de regles extremadament simples.
+
+## 2.3. Comparació amb coarse-graining
+
+En aquesta secció es compara el comportament dels autòmats cel·lulars originals amb la seva versió simplificada mitjançant un procés de coarse-graining amb factor $K=2$. Aquest procediment consisteix en agrupar blocs de cel·les per reduir la resolució espacial del sistema, permetent analitzar la robustesa de les estructures emergents davant una pèrdua d’informació microscòpica.
+
+<div style="text-align: center;">
+  <img src="/sessio1/wolfram_rule30_comparison.png" alt="descripció" width="500">
+</div>
+
+En el cas de la Regla 30, el sistema original mostra una dinàmica clarament caòtica, amb una expansió irregular de patrons que no presenta simetria ni periodicitat. Aquesta complexitat es manté, en termes qualitatius, en la versió coarse-grained, tot i que es produeix una pèrdua notable de detall.
+
+El sistema reduït conserva la sensació general de desordre i imprevisibilitat, però les fluctuacions fines desapareixen parcialment, donant lloc a una representació més suau de la dinàmica. Això indica que el comportament caòtic és robust a canvis d’escala, encara que la informació microscòpica sigui parcialment eliminada.
+
+<div style="text-align: center;">
+  <img src="/sessio1/wolfram_rule90_comparison.png" alt="descripció" width="500">
+</div>
+
+Per a la Regla 90, el sistema original genera una estructura altament ordenada amb forma triangular i simetria fractal, característica de dinàmiques deterministes i auto-similars. Aquesta estructura es manté sorprenentment ben preservada en el procés de coarse-graining.
+
+Tot i la reducció de resolució, la forma global del patró continua sent clarament recognoscible, indicant que la informació essencial del sistema es troba en l’estructura macroscòpica i no en els detalls locals. Això reforça la naturalesa fractal i auto-similar de la Regla 90.
+
+
+# 3. Modelització incendi forestal

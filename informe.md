@@ -2,7 +2,7 @@
 /* Estils globals del document */
 body {
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 9pt;
+  font-size: 11pt;
   text-align: justify;
   line-height: 1.4;
 }
@@ -336,7 +336,6 @@ code {
 }
 </style>
 
-# 0. Índex
 
 # 1. Introducció
 
@@ -423,23 +422,33 @@ En conjunt, els resultats mostren que la robustesa del comportament davant el co
 
 # 3. Modelització incendi forestal
 
+
 ## 3.1. Objectius i metodologia
+
 
 En aquesta segona part de la pràctica es desenvolupa un simulador d'incendi forestal basat en un autòmat cel·lular bidimensional. L'idea principal és que cada cel·la de la graella representa una petita parcel·la de terreny, i que el foc es propaga de cel·la en cel·la seguint unes regles senzilles que depenen de les característiques del terreny: quanta vegetació hi ha i com d'humida està.
 
-L'objectiu és que la simulació sigui el més realista possible. Per això, el model treballa amb dues capes de dades ambientals (vegetació i humitat) que interactuen entre elles, i una tercera capa que registra en quin estat de combustió es troba cada zona del terreny en cada moment.
 
-Les dades de les capes es poden carregar des de fitxers externs en format IDRISI32 o bé generar-se automàticament seguint patrons que imiten els que es poden trobar a la natura, tal com s'explica més endavant.
+L'objectiu és que la simulació sigui el més realista possible. Per això, el model treballa amb dues capes de dades ambientals (vegetació i humitat) que interactuen entre elles, i una tercera capa que registra en quin estat de combustió es troba cada zona del terreny en cada moment. Com a extensió opcional, el model admet una quarta capa vectorial de vent que introdueix una direcció preferent de propagació.
+
+
+Les dades de les capes raster es poden carregar des de fitxers externs en format IDRISI32 (`.rst` + `.rdc`) o bé generar-se automàticament seguint patrons que imiten els que es poden trobar a la natura, tal com s'explica més endavant. La capa de vent, si s'utilitza, es llegeix en format vectorial IDRISI31 (`.vec` + `.dvc`).
+
 
 ## 3.2. Les tres capes del model
 
+
 El model s'organitza en tres capes que evolucionen conjuntament en cada pas de temps, on cada pas equival a una hora:
+
 
 **L1 – Vegetació:** Indica quantes hores triga a cremar-se la vegetació de cada cel·la. Una zona de bosc dens triga molt més (fins a 20 hores) que una zona de prat o herba seca (1–3 hores). Si una cel·la no té vegetació, el foc no s'hi pot propagar.
 
+
 **L2 – Humitat:** Indica quantes hores ha d'esperar el foc abans de poder encendre una cel·la. Una zona propera a un riu o llac pot tenir tanta humitat que el foc trigarà moltes hores a iniciar-se, mentre que una zona seca s'encendrà de seguida.
 
+
 **L3 – Propagació:** Registra l'estat del foc a cada cel·la en cada moment. Cada cel·la pot estar en un d'aquests quatre estats:
+
 
 | Valor | Estat | Significat |
 |-------|-------|------------|
@@ -447,6 +456,7 @@ El model s'organitza en tres capes que evolucionen conjuntament en cada pas de t
 | `1` | Eixugant | Ha rebut calor d'una cel·la veïna i s'està secant |
 | `2` | Cremant | Està en flames i pot encendre les cel·les del voltant |
 | `3` | Cremat | S'ha consumit completament |
+
 
 <div class="image-row">
   <div class="image-column">
@@ -462,34 +472,62 @@ El model s'organitza en tres capes que evolucionen conjuntament en cada pas de t
 
 ## 3.3. Com es propaga el foc
 
+
 En cada pas de temps, el sistema comprova totes les cel·les i aplica les regles següents:
 
+
 - Una cel·la **pendent** s'encén si té alguna cel·la veïna en flames. Si té humitat acumulada, primer passa per la fase d'eixugament; si no en té, s'encén directament.
-- Una cel·la **eixugant** va perdent humitat hora a hora fins que s'esgota i comença a cremar.
+- Una cel·la **eixugant** va perdent humitat hora a hora fins que s'esgota i comença a cremar. Quan el vent és actiu, la velocitat d'evaporació depèn de la component del vent en la direcció de la propagació.
 - Una cel·la **cremant** va consumint la seva vegetació hora a hora fins que s'apaga i queda cremada.
 - Una cel·la **cremada** ja no canvia d'estat.
 
+
 Es pot configurar si el foc es propaga als 4 veïns més propers (amunt, avall, esquerra, dreta) o als 8 veïns en totes les direccions, incloent les diagonals.
+
 
 ## 3.4. Generació de les capes seguint patrons naturals
 
+
 Per tal que la simulació sigui creïble, les capes de vegetació i humitat s'han generat imitant els patrons que es troben habitualment en terrenys naturals, en lloc d'usar valors aleatoris sense cap coherència espacial.
+
 
 En la natura, la distribució de la vegetació i la humitat no és uniforme ni aleatòria: les valls acumulen més humitat que els turons, els rius i els llacs mantenen les zones properes més humides, i els boscos densos tendeixen a créixer en zones més protegides i amb més aigua. Per reproduir aquest comportament, la generació de les capes segueix tres etapes:
 
+
 1. **Relleu del terreny:** Es genera un mapa d'elevació que imita la forma d'un terreny real, amb muntanyes, valls i planes. Les zones altes reben menys vegetació (roca, prat alpí) i les zones baixes n'acumulen més (bosc dens).
+
 
 2. **Humitat del sòl:** La humitat és més alta a les valls i més baixa a les zones elevades i exposades. A més, s'hi afegeixen rius que segueixen el camí natural descendent pel terreny i llacs que s'ubiquen als punts més baixos, creant zones d'alta humitat al seu voltant.
 
+
 3. **Vegetació:** A partir del relleu i la humitat, s'assigna a cada cel·la un tipus de vegetació coherent amb la seva posició: les zones seques i altes tenen arbust o herba, i les zones humides i baixes tenen bosc més dens i amb més hores de combustió.
+
 
 El resultat és un terreny on les zones humides (riberes, valls) actuen com a barreres naturals que alenteixen el foc, i les zones seques (turons, sotabosc escàs) afavoreixen una propagació més ràpida, de manera molt similar al que s'observa en incendis reals.
 
-## 3.5. Implementació
+
+## 3.5. La capa de vent
+
+
+Com a extensió opcional del model, s'ha implementat una quarta capa que representa el vent mitjançant un vector de direcció global. A diferència de les capes raster, el vent s'especifica en format vectorial IDRISI31: un fitxer `.vec` que conté un objecte de tipus `line` format per dos punts, on el vector que va del primer al segon defineix la direcció preferent del vent. El fitxer de capçalera `.dvc` acompanya el `.vec` i indica, entre d'altres, que el tipus d'objecte és `line` i no `polygon`.
+
+
+L'efecte del vent sobre la propagació es modela a partir del producte escalar entre la direcció del vent i el vector que uneix la cel·la en flames amb la cel·la veïna candidata a encendre's. Si aquest producte és positiu (la propagació va en la mateixa direcció que el vent, és a dir, sotavent), l'evaporació de la humitat s'accelera i el foc es pot propagar en menys passos de temps. Si el producte és negatiu (sobrevent), l'evaporació s'alenteix i, en el cas extrem, la propagació en aquella direcció queda bloquejada. La intensitat d'aquest efecte es controla amb el paràmetre de força del vent, que pren valors entre 0.0 (sense efecte) i 1.0 (efecte màxim).
+
+La visualització mostra una fletxa blava a la cantonada superior esquerra de la graella indicant la direcció activa del vent durant tota la simulació. Si no s'especifica cap vent, el model es comporta de manera isòtropa, igual que en la versió base.
+
+
+## 3.6. Implementació
+
 
 El simulador s'ha implementat completament en Python, fent servir `numpy` per gestionar les capes de dades i `matplotlib` per mostrar la simulació de manera visual i interactiva. La interfície permet controlar la simulació pas a pas o de manera automàtica, canviar la capa que es visualitza (propagació, vegetació o humitat) i iniciar focus d'ignició fent clic directament sobre la graella.
 
+
+La lectura de fitxers raster IDRISI32 s'ha implementat de manera que el programa llegeix automàticament el fitxer de capçalera `.rdc` associat al `.rst`, extraient-ne les dimensions, el tipus de dada (`byte`, `integer` o `real`) i el format d'emmagatzematge (ASCII o binari). Això fa que no calgui especificar les dimensions manualment si el fitxer de capçalera és present. De manera anàloga, el parser vectorial IDRISI31 llegeix el `.dvc` per determinar si els objectes del `.vec` són polígons o línies, i extreu el vector de direcció del vent a partir del primer objecte de tipus `line` que troba.
+
+
 El programa s'executa des de la línia de comandes i accepta diverses opcions de configuració:
+
 
 ```bash
 python incendi_forestal.py [--terrain {mediterranean,alpine,savanna,coastal}]
@@ -497,8 +535,14 @@ python incendi_forestal.py [--terrain {mediterranean,alpine,savanna,coastal}]
                            [--rows N] [--cols M]
                            [--seed S]
                            [--neighborhood {moore,von_neumann}]
+                           [--wind fitxer.vec]
+                           [--wind-dir GRAUS]
+                           [--wind-strength 0.0-1.0]
 ```
 
+La direcció del vent es pot especificar de dues maneres: mitjançant un fitxer vectorial IDRISI31 (`--wind`) o directament com un angle en graus seguint la convenció meteorològica (`--wind-dir`), on 0° correspon al nord, 90° a l'est, 180° al sud i 270° a l'oest.
+
+En cas d'executar el codi des de Visual Studio Code, n'hi ha prou de prémer el botó **Run** (▶) per llançar la simulació amb els paràmetres per defecte, sense necessitat d'obrir cap terminal.
 
 # 4. Ús de la IA
 

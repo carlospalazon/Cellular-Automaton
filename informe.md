@@ -404,3 +404,79 @@ Tot i la reducció de resolució, la forma global del patró continua sent clara
 
 
 # 3. Modelització incendi forestal
+
+## 3.1. Objectius i metodologia
+
+En aquesta segona part de la pràctica es desenvolupa un simulador d'incendi forestal basat en un autòmat cel·lular bidimensional. L'idea principal és que cada cel·la de la graella representa una petita parcel·la de terreny, i que el foc es propaga de cel·la en cel·la seguint unes regles senzilles que depenen de les característiques del terreny: quanta vegetació hi ha i com d'humida està.
+
+L'objectiu és que la simulació sigui el més realista possible. Per això, el model treballa amb dues capes de dades ambientals (vegetació i humitat) que interactuen entre elles, i una tercera capa que registra en quin estat de combustió es troba cada zona del terreny en cada moment.
+
+Les dades de les capes es poden carregar des de fitxers externs en format IDRISI32 o bé generar-se automàticament seguint patrons que imiten els que es poden trobar a la natura, tal com s'explica més endavant.
+
+## 3.2. Les tres capes del model
+
+El model s'organitza en tres capes que evolucionen conjuntament en cada pas de temps, on cada pas equival a una hora:
+
+**L1 – Vegetació:** Indica quantes hores triga a cremar-se la vegetació de cada cel·la. Una zona de bosc dens triga molt més (fins a 20 hores) que una zona de prat o herba seca (1–3 hores). Si una cel·la no té vegetació, el foc no s'hi pot propagar.
+
+**L2 – Humitat:** Indica quantes hores ha d'esperar el foc abans de poder encendre una cel·la. Una zona propera a un riu o llac pot tenir tanta humitat que el foc trigarà moltes hores a iniciar-se, mentre que una zona seca s'encendrà de seguida.
+
+**L3 – Propagació:** Registra l'estat del foc a cada cel·la en cada moment. Cada cel·la pot estar en un d'aquests quatre estats:
+
+| Valor | Estat | Significat |
+|-------|-------|------------|
+| `0` | Pendent | Encara no ha rebut foc |
+| `1` | Eixugant | Ha rebut calor d'una cel·la veïna i s'està secant |
+| `2` | Cremant | Està en flames i pot encendre les cel·les del voltant |
+| `3` | Cremat | S'ha consumit completament |
+
+<div class="image-row">
+  <div class="image-column">
+    <img src="/sessio2/capa_humitat.png" alt="Descripció 1">
+    <div class="caption">Figura 1. Capa de la humitat</div>
+  </div>
+  <div class="image-column">
+    <img src="/sessio2/capa_vegetació.png" alt="Descripció 2">
+    <div class="caption">Figura 2. Capa de la vegetació</div>
+  </div>
+</div>
+
+
+## 3.3. Com es propaga el foc
+
+En cada pas de temps, el sistema comprova totes les cel·les i aplica les regles següents:
+
+- Una cel·la **pendent** s'encén si té alguna cel·la veïna en flames. Si té humitat acumulada, primer passa per la fase d'eixugament; si no en té, s'encén directament.
+- Una cel·la **eixugant** va perdent humitat hora a hora fins que s'esgota i comença a cremar.
+- Una cel·la **cremant** va consumint la seva vegetació hora a hora fins que s'apaga i queda cremada.
+- Una cel·la **cremada** ja no canvia d'estat.
+
+Es pot configurar si el foc es propaga als 4 veïns més propers (amunt, avall, esquerra, dreta) o als 8 veïns en totes les direccions, incloent les diagonals.
+
+## 3.4. Generació de les capes seguint patrons naturals
+
+Per tal que la simulació sigui creïble, les capes de vegetació i humitat s'han generat imitant els patrons que es troben habitualment en terrenys naturals, en lloc d'usar valors aleatoris sense cap coherència espacial.
+
+En la natura, la distribució de la vegetació i la humitat no és uniforme ni aleatòria: les valls acumulen més humitat que els turons, els rius i els llacs mantenen les zones properes més humides, i els boscos densos tendeixen a créixer en zones més protegides i amb més aigua. Per reproduir aquest comportament, la generació de les capes segueix tres etapes:
+
+1. **Relleu del terreny:** Es genera un mapa d'elevació que imita la forma d'un terreny real, amb muntanyes, valls i planes. Les zones altes reben menys vegetació (roca, prat alpí) i les zones baixes n'acumulen més (bosc dens).
+
+2. **Humitat del sòl:** La humitat és més alta a les valls i més baixa a les zones elevades i exposades. A més, s'hi afegeixen rius que segueixen el camí natural descendent pel terreny i llacs que s'ubiquen als punts més baixos, creant zones d'alta humitat al seu voltant.
+
+3. **Vegetació:** A partir del relleu i la humitat, s'assigna a cada cel·la un tipus de vegetació coherent amb la seva posició: les zones seques i altes tenen arbust o herba, i les zones humides i baixes tenen bosc més dens i amb més hores de combustió.
+
+El resultat és un terreny on les zones humides (riberes, valls) actuen com a barreres naturals que alenteixen el foc, i les zones seques (turons, sotabosc escàs) afavoreixen una propagació més ràpida, de manera molt similar al que s'observa en incendis reals.
+
+## 3.5. Implementació
+
+El simulador s'ha implementat completament en Python, fent servir `numpy` per gestionar les capes de dades i `matplotlib` per mostrar la simulació de manera visual i interactiva. La interfície permet controlar la simulació pas a pas o de manera automàtica, canviar la capa que es visualitza (propagació, vegetació o humitat) i iniciar focus d'ignició fent clic directament sobre la graella.
+
+El programa s'executa des de la línia de comandes i accepta diverses opcions de configuració:
+
+```bash
+python incendi_forestal.py [--terrain {mediterranean,alpine,savanna,coastal}]
+                           [--veg fitxer.rst --hum fitxer.rst]
+                           [--rows N] [--cols M]
+                           [--seed S]
+                           [--neighborhood {moore,von_neumann}]
+```

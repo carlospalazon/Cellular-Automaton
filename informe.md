@@ -374,7 +374,7 @@ En aquesta figura es presenta la comparació de l’evolució temporal de quatre
 
 - **Regla 0:** S’observa que el sistema convergeix immediatament cap a un estat completament buit, on totes les cel·les adopten el valor 0. Aquest comportament correspon a una dinàmica trivial de classe 1, caracteritzada per l’absència de propagació i la desaparició completa de qualsevol estructura inicial. El sistema entra ràpidament en un estat absorbent estacionari.
 
-- **Regla 30:** S’observa que el sistema convergeix immediatament cap a un estat completament buit, on totes les cel·les adopten el valor 0. Aquest comportament correspon a una dinàmica trivial de classe 1, caracteritzada per l’absència de propagació i la desaparició completa de qualsevol estructura inicial. El sistema entra ràpidament en un estat absorbent estacionari.
+- **Regla 30:** El sistema presenta una dinàmica clarament caòtica i aperiòdica. A partir de la condició inicial amb una única cel·la activa, el patró s'expandeix de manera asimètrica, sense mostrar cap estructura regular ni periodicitat detectable. El costat esquerre mostra una aparença aleatòria, mentre que el costat dret presenta una franja de progressió més regular. Aquest comportament és característic de la classe 3 de Wolfram, on la dinàmica és sensible a les condicions inicials i genera patrons que recorden seqüències pseudoaleatòries. De fet, Wolfram va proposar la Regla 30 com a generador de nombres pseudoaleatoris per a aplicacions computacionals.
 
 - **Regla 90:** S’observa la formació d’un patró fractal altament estructurat amb simetria triangular. Aquest comportament és determinista i regular, i genera una estructura global auto-similar. Correspon a una dinàmica de classe 2, on el sistema no és caòtic però tampoc convergeix a un estat fix, sinó que produeix patrons periòdics i geomètricament estructurats.
 
@@ -402,6 +402,16 @@ Per a la Regla 90, el sistema original genera una estructura altament ordenada a
 
 Tot i la reducció de resolució, la forma global del patró continua sent clarament recognoscible, indicant que la informació essencial del sistema es troba en l’estructura macroscòpica i no en els detalls locals. Això reforça la naturalesa fractal i auto-similar de la Regla 90.
 
+<div style="text-align: center;">
+  <img src="/sessio1/wolfram_rule110_comparison.png" alt="Comparació Regla 110 original i coarse-grain" width="500">
+</div>
+
+En el cas de la Regla 110, el sistema original exhibeix una dinàmica molt característica de la classe 4: es poden observar estructures localitzades i periòdiques ("gliders") que es propaguen cap a l'esquerra i interactuen entre si, sobre un fons de cert desordre. El front d'expansió té una inclinació marcada cap a l'esquerra, cosa que reflecteix l'asimetria intrínseca de la regla. La coexistència de zones regulars i zones de complexitat local és el tret definitori d'aquest comportament, i el que fa la Regla 110 especialment rellevant: s'ha demostrat que és Turing-completa, és a dir, capaç de realitzar qualsevol càlcul computable.
+En la versió amb coarse-graining, les estructures principals es mantenen recognoscibles. El front d'expansió inclinat i les zones de densitat diferenciada es conserven clarament, tot i que els "gliders" individuals queden fusionats i la textura interna es simplifica notablement. A diferència de la Regla 30, on el coarse-graining preserva principalment el caràcter caòtic global, en la Regla 110 la reducció de resolució conserva millor l'estructura macroscòpica perquè les regularitats persistents del sistema operen a una escala espaciotemporal superior a la de dos píxels. No obstant això, la complexitat fina de les interaccions entre gliders es perd irreversiblement, cosa que indica que una part essencial de la riquesa computacional de la Regla 110 resideix precisament en els detalls microscòpics.
+
+## 2.4. Conclusions
+
+En conjunt, l'estudi dels quatre autòmats cel·lulars elementals i la seva versió simplificada per coarse-graining posa en evidència tres conclusions principals. En primer lloc, regles locals extremadament senzilles poden generar comportaments globals de naturalesa molt diversa, des de l'extinció immediata (Regla 0) fins a la computació universal (Regla 110), passant per el caos (Regla 30) i les estructures fractals (Regla 90). En segon lloc, el procés de coarse-graining preserva les propietats qualitatives macroscòpiques del sistema en tots els casos estudiats, tot i que amb diferent fidelitat segons la classe dinàmica: les estructures fractals de la Regla 90 i el caos de la Regla 30 es conserven millor que els detalls locals de la Regla 110. En tercer lloc, la robustesa del comportament emergent davant canvis d'escala suggereix que les propietats globals dels autòmats cel·lulars no depenen únicament dels detalls microscòpics, sinó que emergen de patrons d'interacció d'abast superior.
 
 # 3. Modelització incendi forestal
 
